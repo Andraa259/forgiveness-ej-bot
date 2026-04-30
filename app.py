@@ -168,7 +168,7 @@ elif st.session_state.step in [1, 2, 3]:
                 st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.step == 3:
-        st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan (Bawah Tabel):", value=st.session_state.saran_global)
+        st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
 
     nav1, nav2 = st.columns(2)
     with nav1:

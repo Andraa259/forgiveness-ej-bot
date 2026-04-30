@@ -5,8 +5,8 @@ import io
 from streamlit_scroll_to_top import scroll_to_here
 
 # --- KREDENSIAL TELEGRAM ---
-TOKEN = "8657302361:AAGTm8mN03DPF_eKKZtm94s_YjEVz_yUWz0"
-CHAT_ID = "8718015534"
+TOKEN = st.secrets["TOKEN"]
+CHAT_ID = st.secrets["CHAT_ID"]
 
 # --- INITIALIZING SESSION STATE ---
 if 'step' not in st.session_state:

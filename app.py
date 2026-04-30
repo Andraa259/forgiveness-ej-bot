@@ -4,7 +4,7 @@ import requests
 import io
 from streamlit_scroll_to_top import scroll_to_here
 
-# --- KREDENSIAL TELEGRAM ---
+# --- KREDENSIAL TELEGRAM (DIAMBIL DARI STREAMLIT SECRETS) ---
 TOKEN = st.secrets["TOKEN"]
 CHAT_ID = st.secrets["CHAT_ID"]
 
@@ -13,6 +13,14 @@ if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scroll_to_top' not in st.session_state:
     st.session_state.scroll_to_top = False
+
+# Inisialisasi Kunci Identitas agar tidak error saat dipanggil di proses kirim
+if 'p_nama' not in st.session_state:
+    st.session_state.p_nama = ""
+if 'p_kerja' not in st.session_state:
+    st.session_state.p_kerja = ""
+if 'saran_global' not in st.session_state:
+    st.session_state.saran_global = ""
 
 # --- LOGIKA SCROLL ---
 if st.session_state.scroll_to_top:
@@ -43,10 +51,10 @@ st.markdown("""
 
 DEF_OP = "Pemaafan adalah kemampuan individual dalam membingkai ulang terhadap suatu kesalahan yang dialami/dirasakan sehingga mampu berhenti menyalahkan diri sendiri dan melepaskan pikiran negatif tentang diri sendiri, memahami kesalahan orang lain seiring berjalannya waktu serta berhenti berpikir buruk tentang orang yang pernah menyakiti, dan mampu berdamai dengan keadaan buruk dalam hidup serta melepaskan pikiran negatif terhadap peristiwa yang berada di luar kendali."
 
-# --- DATA 6 INDIKATOR (SPASI DIPERBAIKI) ---
+# --- DATA 6 INDIKATOR (Typo Fixed) ---
 data_aspek = {
     "Pemaafan Diri": [
-        ("Indikator 1", [
+        ("Indikator 1: Kemampuan untuk berhenti menyalahkan diri sendiri", [
             "Seiring waktu, saya bisa memaklumi kesalahan pribadi yang pernah dilakukan. (Favorable)",
             "Ketika membuat kesalahan, saya fokus pada perbaikan daripada terus menerus menyalahkan diri sendiri. (Favorable)",
             "Saya memilih untuk berdamai dengan kekurangan diri sendiri. (Favorable)",
@@ -54,7 +62,7 @@ data_aspek = {
             "Muncul perasaan benci ketika saya mengingat kesalahan diri sendiri. (Unfavorable)",
             "Saya terjebak dalam penyesalan atas kegagalan diri sendiri. (Unfavorable)"
         ]),
-        ("Indikator 2", [
+        ("Indikator 2: Kesediaan untuk melepaskan pikiran negatif tentang diri", [
             "Pikiran negatif tentang diri sendiri mulai memudar seiring waktu. (Favorable)",
             "Saya dapat memahami diri sendiri atas kesalahan yang telah saya lakukan. (Favorable)",
             "Saat  ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
@@ -64,7 +72,7 @@ data_aspek = {
         ])
     ],
     "Pemaafan Orang Lain": [
-        ("Indikator 3", [
+        ("Indikator 3: Kemampuan untuk memahami kesalahan orang lain", [
             "Saya dapat memaklumi bahwa setiap orang pasti pernah melakukan kekeliruan. (Favorable)",
             "Saya mencoba memahami alasan dibalik tindakan orang lain yang telah menyakiti saya. (Favorable)",
             "Saya menyadari bahwa ada alasan tertentu yang membuat orang lain sulit untuk bertindak benar. (Favorable)",
@@ -72,7 +80,7 @@ data_aspek = {
             "Saya tidak bisa menerima alasan apapun dari orang yang telah mengecewakan saya. (Unfavorable)",
             "Sangat sulit bagi saya untuk mengerti mengapa seseorang berbuat jahat kepada saya. (Unfavorable)"
         ]),
-        ("Indikator 4", [
+        ("Indikator 4: Berhenti berpikir buruk tentang orang yang pernah menyakiti", [
             "Pikiran buruk terhadap orang yang pernah menyakiti saya perlahan mulai menghilang. (Favorable)",
             "Saya merasa sudah tidak lagi menyimpan kebencian terhadap orang yang pernah menyakiti saya. (Favorable)",
             "Mudah bagi saya melepaskan rasa benci yang tertuju pada orang yang pernah berbuat salah. (Favorable)",
@@ -82,7 +90,7 @@ data_aspek = {
         ])
     ],
     "Pemaafan Situasi": [
-        ("Indikator 5", [
+        ("Indikator 5: Kemampuan untuk berdamai dengan keadaan buruk dalam hidup", [
             "Seiring berjalannya waktu, saya mulai bisa menerima kenyataan pahit yang terjadi dalam hidup dengan lapang dada. (Favorable)",
             "Saya sadar untuk tidak menyalahkan nasib atas kejadian buruk yang menimpa. (Favorable)",
             "Mampu menerima kenyataan bahwa hidup tidak selalu berjalan sesuai dengan rencana saya. (Favorable)",
@@ -90,7 +98,7 @@ data_aspek = {
             "Sering merasa terjebak dalam nasib buruk yang seolah-olah tidak pernah berakhir di hidup saya. (Unfavorable)",
             "Terus-menerus mengeluhkan nasib buruk yang menimpa diri saya menjadi hal yang sulit untuk dihentikan. (Unfavorable)"
         ]),
-        ("Indikator 6", [
+        ("Indikator 6: Melepaskan pikiran negatif terhadap peristiwa luar kendali", [
             "Pikiran tentang kejadian buruk di masa lalu tidak lagi mengganggu saya untuk berkonsentrasi sehari-hari. (Favorable)",
             "Saya merasa sudah bisa berdamai dengan bayangan tentang masa-masa sulit yang pernah dialami. (Favorable)",
             "Saya mampu mengalihkan fokus dari peristiwa yang mengecewakan ke hal-hal yang lebih produktif. (Favorable)",
@@ -103,15 +111,19 @@ data_aspek = {
 
 # --- ALUR APLIKASI ---
 
-# SLIDE 0: PETUNJUK
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     st.subheader("📝 PETUNJUK PENGISIAN")
     st.info("Mohon dibaca sebelum memberikan penilaian")
     st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun, dari aspek :")
-    st.markdown("* **Kejelasan**, * **Relevansi**, * **Kesesuaian**")
+    st.markdown("""
+    *   **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami dan tidak menyebabkan persepsi berbeda.
+    *   **Relevansi**: Relevansi aitem alat ukur yang disusun apakah sudah menggambarkan variabel yang diukur.
+    *   **Kesesuaian**: Kesesuaian aitem yang disusun dalam alat ukur sudah sesuai dengan indikatornya.
+    """)
     st.write("Penilaian: 1=Kurang, 2=Cukup, 3=Baik, 4=Baik Sekali")
+    st.warning("Jika pernyataan kurang tepat, berilah catatan/saran pada kolom yang tersedia.")
     
     st.text_input("Nama Panelis", key="p_nama")
     st.text_input("Pekerjaan", key="p_kerja")
@@ -119,47 +131,44 @@ if st.session_state.step == 0:
     if st.button("Mulai Penilaian 🚀"):
         if st.session_state.p_nama == "" or st.session_state.p_kerja == "":
             st.error("⚠️ Mohon isi Nama dan Pekerjaan!")
-        else: move_step(1)
+        else: move_step(1); st.rerun()
 
-# SLIDE 1, 2, 3: PENILAIAN
 elif st.session_state.step in [1, 2, 3]:
-    steps = {1: "Pemaafan Diri", 2: "Pemaafan Orang Lain", 3: "Pemaafan Situasi"}
-    aspek = steps[st.session_state.step]
-    st.subheader(f"Aspek: {aspek}")
+    aspek_list = {1: "Pemaafan Diri", 2: "Pemaafan Orang Lain", 3: "Pemaafan Situasi"}
+    aspek_aktif = aspek_list[st.session_state.step]
+    st.subheader(f"Aspek: {aspek_aktif}")
     
-    # Render Items
-    item_num = 1
-    for ind_name, items in data_aspek[aspek]:
+    for ind_name, items in data_aspek[aspek_aktif]:
         st.markdown(f"<div class='indicator-header'>{ind_name}</div>", unsafe_allow_html=True)
         for txt in items:
             with st.container():
                 st.markdown("<div class='white-card'>", unsafe_allow_html=True)
                 st.write(f"**{txt}**")
                 c1, c2, c3 = st.columns(3)
-                # KUNCI MATI: Menggunakan teks asli sebagai Key agar tidak mungkin tertukar
+                # UNIQUE KEYS: Menggunakan teks soal agar data terekam global & tanpa enter
                 with c1: st.selectbox("Kejelasan", [1,2,3,4], index=3, key=f"kj_{txt}")
                 with c2: st.selectbox("Relevansi", [1,2,3,4], index=3, key=f"rel_{txt}")
                 with c3: st.selectbox("Kesesuaian", [1,2,3,4], index=3, key=f"kes_{txt}")
-                st.text_input("Keterangan/Saran:", key=f"ket_{txt}")
+                st.text_input("Keterangan per Aitem:", key=f"ket_{txt}")
                 st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.step == 3:
-        st.text_area("Saran Umum (Bawah Tabel):", key="saran_global")
+        st.text_area("Catatan/Saran Keseluruhan (Bawah Tabel):", key="saran_global")
 
     # Navigasi
-    nb1, nb2 = st.columns(2)
-    with nb1: 
-        if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1)
-    with nb2:
+    nav1, nav2 = st.columns(2)
+    with nav1:
+        if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1); st.rerun()
+    with nav2:
         if st.session_state.step < 3:
-            if st.button("Lanjut ➡️"): move_step(st.session_state.step + 1)
+            if st.button("Lanjut ➡️"): move_step(st.session_state.step + 1); st.rerun()
         else:
-            if st.button("🚀 KIRIM HASIL"): move_step(4)
+            if st.button("🚀 KIRIM HASIL"): move_step(4); st.rerun()
 
-# SLIDE 4: PROSES KIRIM (MENGHILANGKAN MIRRORING)
+# SLIDE 4: PROSES KIRIM (Mencegah Mirroring Bug)
 elif st.session_state.step == 4:
-    st.title("Sedang Mengirim...")
-    with st.spinner("Menyalin data ke dokumen Word..."):
+    st.title("Sedang Memproses...")
+    with st.spinner("Menyalin data ke Word & Mengirim ke Telegram..."):
         try:
             doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
             # 1. Identitas
@@ -167,31 +176,37 @@ elif st.session_state.step == 4:
                 if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.p_nama}"
                 if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.p_kerja}"
             
-            # 2. Tabel
+            # 2. Global Mapping (Mapping semua aitem dari semua slide)
             table = doc.tables[0]
             for row in table.rows:
                 aitem_word = row.cells[2].text.strip()
-                # Cari di seluruh data_aspek
+                found = False
                 for asp_name, indicators in data_aspek.items():
                     for ind_name, items in indicators:
                         for txt_ori in items:
-                            # Cek Kecocokan (Gunakan 20 karakter saja agar lebih aman)
-                            if txt_ori[:20] in aitem_word:
+                            # Cek Kecocokan (Gunakan 25 karakter awal)
+                            if txt_ori[:25] in aitem_word:
                                 row.cells[3].text = str(st.session_state.get(f"kj_{txt_ori}", 4))
                                 row.cells[4].text = str(st.session_state.get(f"rel_{txt_ori}", 4))
                                 row.cells[5].text = str(st.session_state.get(f"kes_{txt_ori}", 4))
                                 row.cells[6].text = str(st.session_state.get(f"ket_{txt_ori}", ""))
-                
+                                found = True
+                                break
+                        if found: break
+                    if found: break
+            
+            # 3. Saran Akhir
+            for row in table.rows:
                 if "Catatan" in row.cells[2].text:
-                    row.cells[2].text += "\n" + st.session_state.get("saran_global", "")
+                    row.cells[2].text += "\n" + st.session_state.saran_global
 
             buf = io.BytesIO()
             doc.save(buf)
             buf.seek(0)
             kirim_ke_telegram(buf, st.session_state.p_nama)
             st.balloons()
-            st.success("✅ BERHASIL TERKIRIM! Anda bisa menutup halaman ini.")
-            if st.button("Ulangi Form"): move_step(0)
+            st.success("✅ Berhasil Terkirim! Anda bisa menutup halaman ini.")
+            if st.button("Isi Ulang Form"): move_step(0); st.rerun()
         except Exception as e:
-            st.error(f"Terjadi kesalahan: {e}")
-            if st.button("Coba Lagi"): move_step(3)
+            st.error(f"Terjadi kesalahan teknis: {e}")
+            if st.button("Kembali ke Penilaian"): move_step(3); st.rerun()

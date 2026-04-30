@@ -4,7 +4,7 @@ import requests
 import io
 from streamlit_scroll_to_top import scroll_to_here
 
-# --- KREDENSIAL TELEGRAM ---
+# --- KREDENSIAL TELEGRAM (DIAMBIL DARI STREAMLIT SECRETS) ---
 TOKEN = st.secrets["TOKEN"]
 CHAT_ID = st.secrets["CHAT_ID"]
 
@@ -45,9 +45,8 @@ st.markdown("""
 
 DEF_OP = "Pemaafan adalah kemampuan individual dalam membingkai ulang terhadap suatu kesalahan yang dialami/dirasakan sehingga mampu berhenti menyalahkan diri sendiri dan melepaskan pikiran negatif tentang diri sendiri, memahami kesalahan orang lain seiring berjalannya waktu serta berhenti berpikir buruk tentang orang yang pernah menyakiti, dan mampu berdamai dengan keadaan buruk dalam hidup serta melepaskan pikiran negatif terhadap peristiwa yang berada di luar kendali."
 
-# --- DATA UNTUK MAPPING ---
-# Struktur data flat agar mudah dicari saat pembuatan Word
-mapping_data = {
+# --- DATA LENGKAP UNTUK MAPPING ---
+data_aspek = {
     "Pemaafan Diri": [
         "Seiring waktu, saya bisa memaklumi kesalahan pribadi yang pernah dilakukan. (Favorable)",
         "Ketika membuat kesalahan, saya fokus pada perbaikan daripada terus menerus menyalahkan diri sendiri. (Favorable)",
@@ -92,48 +91,31 @@ mapping_data = {
     ]
 }
 
-def render_page_content(aspek):
+def render_page_content(aspek, items_list):
     st.markdown(f"### Aspek: {aspek}")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     
-    items = mapping_data[aspek]
-    for idx, txt in enumerate(items):
+    for idx, txt in enumerate(items_list):
         with st.container():
-            st.markdown("<div class='white-card'>", unsafe_allow_html=True)
+            st.markdown(f"<div class='white-card'>", unsafe_allow_html=True)
             st.markdown(f"**{txt}**")
             c1, c2, c3 = st.columns(3)
-            # KEY UNIK: Mengunci data ke session_state berdasarkan nama aspek dan indeks
-            key_base = f"{aspek.replace(' ', '_')}_{idx}"
-            with c1: st.selectbox("Kejelasan", [1,2,3,4], index=3, key=f"{key_base}_kj")
-            with c2: st.selectbox("Relevansi", [1,2,3,4], index=3, key=f"{key_base}_rel")
-            with c3: st.selectbox("Kesesuaian", [1,2,3,4], index=3, key=f"{key_base}_kes")
-            st.text_input("Keterangan per Aitem:", key=f"{key_base}_ket")
+            key_id = f"{aspek.replace(' ', '_')}_{idx}"
+            with c1: st.selectbox("Kejelasan", [1,2,3,4], index=3, key=f"{key_id}_kj")
+            with c2: st.selectbox("Relevansi", [1,2,3,4], index=3, key=f"{key_id}_rel")
+            with c3: st.selectbox("Kesesuaian", [1,2,3,4], index=3, key=f"{key_id}_kes")
+            st.text_input("Keterangan per Aitem:", key=f"{key_id}_ket")
             st.markdown("</div>", unsafe_allow_html=True)
 
-# --- NAVIGATION FLOW ---
+# --- ALUR APLIKASI ---
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     st.subheader("📝 PETUNJUK PENGISIAN")
-    st.info("Mohon dibaca sebelum memberikan penilaian")
-    st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun, dari aspek :")
-    st.markdown("""
-    *   **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami dan tidak menyebabkan persepsi berbeda
-    *   **Relevansi**: Relevansi aitem alat ukur yang disusun apakah sudah menggambarkan variabel yang diukur
-    *   **Kesesuaian**: Kesesuaian aitem yang disusun dalam alat ukur sudah sesuai dengan indikatornya
-    """)
-    st.write("Penilaian dilakukan dengan memberikan angka 1-4 pada tiap aspek yang diukur dengan ketentuan sebagai berikut :")
-    st.markdown("""
-    1 = "Kurang"  
-    2 = "Cukup"  
-    3 = "Baik"  
-    4 = "Baik Sekali"
-    """)
-    st.warning("Namun jika pernyataan tersebut menurut anda kurang tepat dan sulit dipahami maka berilah catatan dan saran anda pada kolom ‘catatan/saran’.")
+    st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun...")
     
-    # Input Identitas
-    st.session_state.identitas['nama'] = st.text_input("Nama Panelis", value=st.session_state.identitas['nama'], key="input_nama")
-    st.session_state.identitas['pekerjaan'] = st.text_input("Pekerjaan", value=st.session_state.identitas['pekerjaan'], key="input_kerja")
+    st.session_state.identitas['nama'] = st.text_input("Nama Panelis", value=st.session_state.identitas['nama'])
+    st.session_state.identitas['pekerjaan'] = st.text_input("Pekerjaan", value=st.session_state.identitas['pekerjaan'])
     
     if st.button("Mulai Penilaian 🚀"):
         if st.session_state.identitas['nama'] == "" or st.session_state.identitas['pekerjaan'] == "":
@@ -142,49 +124,49 @@ if st.session_state.step == 0:
             move_step(1)
             st.rerun()
 
-elif st.session_state.step in [1, 2, 3]:
-    aspek_map = {1: "Pemaafan Diri", 2: "Pemaafan Orang Lain", 3: "Pemaafan Situasi"}
-    render_page_content(aspek_map[st.session_state.step])
-    
-    if st.session_state.step == 3:
-        st.text_area("Catatan/Saran Keseluruhan (Bawah Tabel):", key="saran_akhir_global")
-
+elif st.session_state.step == 1:
+    render_page_content("Pemaafan Diri", data_aspek["Pemaafan Diri"])
     c1, c2 = st.columns(2)
-    with c1: st.button("⬅️ Kembali", on_click=move_step, args=(st.session_state.step - 1,))
-    with c2:
-        if st.session_state.step < 3:
-            st.button("Lanjut ➡️", on_click=move_step, args=(st.session_state.step + 1,))
-        else:
-            if st.button("🚀 KIRIM HASIL"):
-                with st.spinner("Memproses Word..."):
-                    doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
-                    # Mapping Identitas
-                    for p in doc.paragraphs:
-                        if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.identitas['nama']}"
-                        if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.identitas['pekerjaan']}"
-                    
-                    table = doc.tables[0]
-                    for row in table.rows:
-                        aitem_doc = row.cells[2].text.strip()
-                        # Scanning seluruh data di session_state
-                        for asp, items in mapping_data.items():
-                            for idx, txt_ori in enumerate(items):
-                                if txt_ori[:30] in aitem_doc:
-                                    key_base = f"{asp.replace(' ', '_')}_{idx}"
-                                    # Mengambil nilai langsung dari key yang tersimpan secara global
-                                    row.cells[3].text = str(st.session_state.get(f"{key_base}_kj", ""))
-                                    row.cells[4].text = str(st.session_state.get(f"{key_base}_rel", ""))
-                                    row.cells[5].text = str(st.session_state.get(f"{key_base}_kes", ""))
-                                    row.cells[6].text = str(st.session_state.get(f"{key_base}_ket", ""))
-                    
-                    # Mapping Catatan Akhir
-                    for row in table.rows:
-                        if "Catatan" in row.cells[2].text:
-                            row.cells[2].text = row.cells[2].text + "\n" + st.session_state.get("saran_akhir_global", "")
+    with c1: st.button("⬅️ Kembali", on_click=move_step, args=(0,))
+    with c2: st.button("Lanjut ke Slide 2 ➡️", on_click=move_step, args=(2,))
 
-                    buf = io.BytesIO()
-                    doc.save(buf)
-                    buf.seek(0)
-                    kirim_ke_telegram(buf, st.session_state.identitas['nama'])
-                    st.balloons()
-                    st.success("✅ Berhasil Terkirim!")
+elif st.session_state.step == 2:
+    render_page_content("Pemaafan Orang Lain", data_aspek["Pemaafan Orang Lain"])
+    c1, c2 = st.columns(2)
+    with c1: st.button("⬅️ Kembali", on_click=move_step, args=(1,))
+    with c2: st.button("Lanjut ke Slide 3 ➡️", on_click=move_step, args=(3,))
+
+elif st.session_state.step == 3:
+    render_page_content("Pemaafan Situasi", data_aspek["Pemaafan Situasi"])
+    saran_akhir = st.text_area("Catatan/Saran Keseluruhan:", key="saran_umum")
+    c1, c2 = st.columns(2)
+    with c1: st.button("⬅️ Kembali", on_click=move_step, args=(2,))
+    with c2:
+        if st.button("🚀 KIRIM HASIL"):
+            with st.spinner("Memproses Word..."):
+                doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
+                for p in doc.paragraphs:
+                    if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.identitas['nama']}"
+                    if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.identitas['pekerjaan']}"
+                
+                table = doc.tables[0]
+                for row in table.rows:
+                    aitem_doc = row.cells[2].text.strip()
+                    for asp, items in data_aspek.items():
+                        for idx, txt_ori in enumerate(items):
+                            if txt_ori[:30] in aitem_doc:
+                                key_id = f"{asp.replace(' ', '_')}_{idx}"
+                                row.cells[3].text = str(st.session_state.get(f"{key_id}_kj", ""))
+                                row.cells[4].text = str(st.session_state.get(f"{key_id}_rel", ""))
+                                row.cells[5].text = str(st.session_state.get(f"{key_id}_kes", ""))
+                                row.cells[6].text = str(st.session_state.get(f"{key_id}_ket", ""))
+                    
+                    if "Catatan" in row.cells[2].text:
+                        row.cells[2].text = row.cells[2].text + "\n" + st.session_state.get("saran_umum", "")
+
+                buf = io.BytesIO()
+                doc.save(buf)
+                buf.seek(0)
+                kirim_ke_telegram(buf, st.session_state.identitas['nama'])
+                st.balloons()
+                st.success("✅ Berhasil Terkirim!")

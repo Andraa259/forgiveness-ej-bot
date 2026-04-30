@@ -9,13 +9,12 @@ TOKEN = st.secrets["TOKEN"]
 CHAT_ID = st.secrets["CHAT_ID"]
 
 # --- INITIALIZING SESSION STATE ---
-# Pastikan semua variabel permanen diinisialisasi sekali saja
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scroll_to_top' not in st.session_state:
     st.session_state.scroll_to_top = False
 
-# Kamus Utama untuk menyimpan semua jawaban agar tidak hilang saat pindah slide
+# Kamus Utama (PENTING: Agar data slide 1, 2, 3 tersimpan permanen)
 if 'master_data' not in st.session_state:
     st.session_state.master_data = {}
 if 'p_nama' not in st.session_state:
@@ -54,7 +53,7 @@ st.markdown("""
 
 DEF_OP = "Pemaafan adalah kemampuan individual dalam membingkai ulang terhadap suatu kesalahan yang dialami/dirasakan sehingga mampu berhenti menyalahkan diri sendiri dan melepaskan pikiran negatif tentang diri sendiri, memahami kesalahan orang lain seiring berjalannya waktu serta berhenti berpikir buruk tentang orang yang pernah menyakiti, dan mampu berdamai dengan keadaan buruk dalam hidup serta melepaskan pikiran negatif terhadap peristiwa yang berada di luar kendali."
 
-# --- DATA 6 INDIKATOR ---
+# --- DATA INDIKATOR ---
 data_aspek = {
     "Pemaafan Diri": [
         ("Indikator 1: Kemampuan untuk berhenti menyalahkan diri sendiri", [
@@ -117,10 +116,24 @@ data_aspek = {
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
-    st.subheader("📝 PETUNJUK PENGISIAN")
-    st.write("Silakan isi nama dan pekerjaan Anda sebelum memulai penilaian.")
     
-    # Simpan nama/kerja ke variabel permanen
+    st.subheader("📝 PETUNJUK PENGISIAN")
+    st.info("Mohon dibaca sebelum memberikan penilaian")
+    
+    st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun, dari aspek :")
+    
+    st.markdown("""
+    * **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami dan tidak menyebabkan persepsi berbeda
+    * **Relevansi**: Relevansi aitem alat ukur yang disusun apakah sudah menggambarkan variabel yang diukur
+    * **Kesesuaian**: Kesesuaian aitem yang disusun dalam alat ukur sudah sesuai dengan indikatornya
+    """)
+    
+    st.write("Penilaian dilakukan dengan memberikan angka 1-4 pada tiap aspek yang diukur dengan ketentuan sebagai berikut :")
+    st.markdown("""
+    1 = "Kurang" | 2 = "Cukup" | 3 = "Baik" | 4 = "Baik Sekali"
+    """)
+    st.warning("Namun jika pernyataan tersebut menurut Anda kurang tepat dan sulit dipahami maka berilah catatan dan saran Anda pada kolom 'catatan/saran'.")
+    
     st.session_state.p_nama = st.text_input("Nama Panelis", value=st.session_state.p_nama)
     st.session_state.p_kerja = st.text_input("Pekerjaan", value=st.session_state.p_kerja)
     
@@ -137,7 +150,7 @@ elif st.session_state.step in [1, 2, 3]:
     for ind_name, items in data_aspek[aspek_aktif]:
         st.markdown(f"<div class='indicator-header'>{ind_name}</div>", unsafe_allow_html=True)
         for txt in items:
-            # Inisialisasi data default di kamus permanen jika belum ada
+            # Pastikan data aitem ada di master_data
             if txt not in st.session_state.master_data:
                 st.session_state.master_data[txt] = {"kj": 4, "rel": 4, "kes": 4, "ket": ""}
             
@@ -146,7 +159,7 @@ elif st.session_state.step in [1, 2, 3]:
                 st.write(f"**{txt}**")
                 c1, c2, c3 = st.columns(3)
                 
-                # Update langsung ke master_data saat ada perubahan (on_change tidak perlu enter)
+                # Simpan perubahan secara real-time ke master_data
                 with c1: st.session_state.master_data[txt]["kj"] = st.selectbox("Kejelasan", [1,2,3,4], index=st.session_state.master_data[txt]["kj"]-1, key=f"kj_{txt}")
                 with c2: st.session_state.master_data[txt]["rel"] = st.selectbox("Relevansi", [1,2,3,4], index=st.session_state.master_data[txt]["rel"]-1, key=f"rel_{txt}")
                 with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [1,2,3,4], index=st.session_state.master_data[txt]["kes"]-1, key=f"kes_{txt}")
@@ -155,7 +168,7 @@ elif st.session_state.step in [1, 2, 3]:
                 st.markdown("</div>", unsafe_allow_html=True)
 
     if st.session_state.step == 3:
-        st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
+        st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan (Bawah Tabel):", value=st.session_state.saran_global)
 
     nav1, nav2 = st.columns(2)
     with nav1:
@@ -168,26 +181,25 @@ elif st.session_state.step in [1, 2, 3]:
 
 elif st.session_state.step == 4:
     st.title("Sedang Memproses...")
-    with st.spinner("Menyalin data ke Word..."):
+    with st.spinner("Menyalin data ke dokumen Word..."):
         try:
             doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
-            
             # 1. Identitas
             for p in doc.paragraphs:
                 if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.p_nama}"
                 if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.p_kerja}"
             
-            # 2. Tabel (MAPPING DENGAN NORMALISASI TEKS)
+            # 2. Tabel (Mapping Global)
             table = doc.tables[0]
             for row in table.rows:
-                # Ambil teks dari cell Word, bersihkan dari spasi aneh dan karakter non-print
+                # Normalisasi teks Word
                 aitem_word = "".join(row.cells[2].text.split()).lower()
                 
                 for txt_ori, data in st.session_state.master_data.items():
-                    # Normalisasi teks dari kode Python agar pencocokan akurat
+                    # Normalisasi teks Python
                     txt_normalized = "".join(txt_ori.split()).lower()
                     
-                    # Gunakan substring check yang kuat (25 karakter pertama)
+                    # Pencocokan substring kuat
                     if txt_normalized[:25] in aitem_word:
                         row.cells[3].text = str(data["kj"])
                         row.cells[4].text = str(data["rel"])
@@ -204,8 +216,8 @@ elif st.session_state.step == 4:
             buf.seek(0)
             kirim_ke_telegram(buf, st.session_state.p_nama)
             st.balloons()
-            st.success("✅ Berhasil Terkirim!")
-            if st.button("Ulangi"): move_step(0); st.rerun()
+            st.success("✅ Berhasil Terkirim! Anda bisa menutup halaman ini.")
+            if st.button("Ulangi Form"): move_step(0); st.rerun()
         except Exception as e:
             st.error(f"Gagal: {e}")
-            if st.button("Kembali"): move_step(3); st.rerun()
+            if st.button("Kembali ke Penilaian"): move_step(3); st.rerun()

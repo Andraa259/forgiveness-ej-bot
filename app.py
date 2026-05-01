@@ -203,7 +203,7 @@ elif st.session_state.step == 4:
                     aitem_word = "".join(row.cells[2].text.split()).lower()
                     for txt_ori, data in st.session_state.master_data.items():
                         txt_normalized = "".join(txt_ori.split()).lower()
-                        if txt_normalized[:25] in aitem_word:
+                        if txt_normalized[:60] in aitem_word:
                             row.cells[3].text = str(data["kj"])
                             row.cells[4].text = str(data["rel"])
                             row.cells[5].text = str(data["kes"])

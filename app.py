@@ -8,6 +8,9 @@ from streamlit_scroll_to_top import scroll_to_here
 TOKEN = st.secrets["TOKEN"]
 CHAT_ID = st.secrets["CHAT_ID"]
 
+# --- 1. DEFINISI OPERASIONAL (VARIABEL YANG TADI HILANG) ---
+DEF_OP = "Pemaafan adalah kemampuan individual dalam membingkai ulang terhadap suatu kesalahan yang dialami/dirasakan sehingga mampu berhenti menyalahkan diri sendiri dan melepaskan pikiran negatif tentang diri sendiri, memahami kesalahan orang lain seiring berjalannya waktu serta berhenti berpikir buruk tentang orang yang pernah menyakiti, dan mampu berdamai dengan keadaan buruk dalam hidup serta melepaskan pikiran negatif terhadap peristiwa yang berada di luar kendali."
+
 # --- INITIALIZING SESSION STATE ---
 if 'step' not in st.session_state:
     st.session_state.step = 0
@@ -33,7 +36,7 @@ data_aspek = {
             "Saya memilih untuk berdamai dengan kekurangan diri sendiri. (Favorable)",
             "Sulit bagi saya untuk berhenti menyalahkan diri sendiri. (Unfavorable)",
             "Muncul perasaan benci ketika saya mengingat kesalahan diri sendiri. (Unfavorable)",
-            "Saya terjebak dalam penyesalar atas kegagalan diri sendiri. (Unfavorable)"
+            "Saya terjebak dalam penyesalan atas kegagalan diri sendiri. (Unfavorable)"
         ]),
         ("Indikator 2: Kesediaan untuk melepaskan pikiran negatif tentang diri", [
             "Pikiran negatif tentang diri sendiri mulai memudar seiring waktu. (Favorable)",
@@ -82,24 +85,24 @@ data_aspek = {
     ]
 }
 
-# PRE-FILLED MASTER DATA (Set Nilai & Keterangan Sesuai Dokumen Testing)[cite: 1]
+# --- PRE-FILLED MASTER DATA (Sesuai Word Testing) ---[cite: 1]
 if 'master_data' not in st.session_state:
     md = {}
-    # Pemaafan Diri[cite: 1]
+    # 1. Pemaafan Diri[cite: 1]
     items_diri = [item for sub in data_aspek["Pemaafan Diri"] for item in sub[1]]
     skor_diri = [1, 2, 3, 2, 1, 2, 3, 4, 1, 2, 3, 4] 
     ket_diri = ["Test11", "Test12", "Test13", "Test24", "Test15", "Test16", "Test21", "Test22", "Test23", "Test24", "Test25", "Test26"]
     for i, txt in enumerate(items_diri):
         md[txt] = {"kj": skor_diri[i], "rel": skor_diri[i], "kes": skor_diri[i], "ket": ket_diri[i]}
 
-    # Pemaafan Orang Lain[cite: 1]
+    # 2. Pemaafan Orang Lain[cite: 1]
     items_orang = [item for sub in data_aspek["Pemaafan Orang Lain"] for item in sub[1]]
     skor_orang = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]
     ket_orang = ["Test31", "Test32", "Test33", "Test34", "Test35", "Test36", "Test41", "Test42", "Test43", "Test44", "Test45", "Test46"]
     for i, txt in enumerate(items_orang):
         md[txt] = {"kj": skor_orang[i], "rel": skor_orang[i], "kes": skor_orang[i], "ket": ket_orang[i]}
 
-    # Pemaafan Situasi[cite: 1]
+    # 3. Pemaafan Situasi[cite: 1]
     items_situasi = [item for sub in data_aspek["Pemaafan Situasi"] for item in sub[1]]
     skor_situasi = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]
     ket_situasi = ["Test51", "Test52", "Test53", "Test54", "Test55", "Test56", "Test61", "Test62", "Test63", "Test64", "Test65", "Test66"]
@@ -108,7 +111,7 @@ if 'master_data' not in st.session_state:
         
     st.session_state.master_data = md
 
-# --- LOGIKA SCROLL ---
+# --- LOGIKA SCROLL & NAVIGASI ---
 if st.session_state.scroll_to_top:
     scroll_to_here(0, key=f'scroll_step_{st.session_state.step}') 
     st.session_state.scroll_to_top = False
@@ -125,18 +128,19 @@ def kirim_ke_telegram(file_stream, nama_panelis):
 
 # --- UI STYLING ---
 st.set_page_config(page_title="Expert Judgement", layout="centered")
-st.markdown("""<style>.def-box { background-color: #F0F9FF; padding: 18px; border-radius: 12px; border-left: 6px solid #0EA5E9; margin-bottom: 20px; }.indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; text-align: center; margin-top: 15px; }.white-card { background-color: #FFFFFF; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; margin-bottom: 30px; }.stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }.thanks-card { text-align: center; padding: 40px; background-color: #F8FAFC; border-radius: 20px; border: 1px solid #E2E8F0; margin-top: 50px; }</style>""", unsafe_allow_html=True)
+st.markdown("""<style>.def-box { background-color: #F0F9FF; padding: 18px; border-radius: 12px; border-left: 6px solid #0EA5E9; margin-bottom: 20px; line-height: 1.6; }.indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; font-weight: bold; text-align: center; margin-top: 15px; }.white-card { background-color: #FFFFFF; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }.stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }.thanks-card { text-align: center; padding: 40px; background-color: #F8FAFC; border-radius: 20px; border: 1px solid #E2E8F0; margin-top: 50px; }hr { margin: 15px 0; border-top: 1px solid #eee; }</style>""", unsafe_allow_html=True)
 
 # --- ALUR APLIKASI ---
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     st.subheader("📝 PETUNJUK PENGISIAN")
+    st.info("Mohon dibaca sebelum memberikan penilaian")
     st.write("Silakan lengkapi identitas untuk melanjutkan.")
     st.session_state.p_nama = st.text_input("Nama Panelis", value=st.session_state.p_nama)
     st.session_state.p_kerja = st.text_input("Pekerjaan", value=st.session_state.p_kerja)
     if st.button("Mulai Penilaian 🚀"):
-        if st.session_state.p_nama == "" or st.session_state.p_kerja == "": st.error("⚠️ Wajib diisi!")
+        if st.session_state.p_nama == "" or st.session_state.p_kerja == "": st.error("⚠️ Nama dan Pekerjaan wajib diisi!")
         else: move_step(1); st.rerun()
 
 elif st.session_state.step in [1, 2, 3]:
@@ -155,16 +159,17 @@ elif st.session_state.step in [1, 2, 3]:
                 with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [0,1,2,3,4], index=st.session_state.master_data[txt]["kes"], key=f"kes_{txt}")
                 st.session_state.master_data[txt]["ket"] = st.text_input("Keterangan per Aitem:", value=st.session_state.master_data[txt]["ket"], key=f"ket_{txt}")
                 st.markdown("</div>", unsafe_allow_html=True)
-    if st.session_state.step == 3: st.session_state.saran_global = st.text_area("Saran Umum:", value=st.session_state.saran_global)
+    if st.session_state.step == 3: st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
     nb1, nb2 = st.columns(2)
     with nb1: 
         if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1); st.rerun()
-    with nb2:
-        if st.button("Lanjut ➡️" if st.session_state.step < 3 else "🚀 KIRIM HASIL"): move_step(st.session_state.step + 1); st.rerun()
+    with nav2 if 'nav2' not in locals() else nav2: # Safe navigasi
+        if st.button("Lanjut ➡️" if st.session_state.step < 3 else "🚀 KIRIM HASIL"):
+            move_step(st.session_state.step + 1); st.rerun()
 
 elif st.session_state.step == 4:
     if not st.session_state.submitted:
-        with st.spinner("Mengirim..."):
+        with st.spinner("Mengirim Dokumen..."):
             try:
                 doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
                 for p in doc.paragraphs:
@@ -174,7 +179,9 @@ elif st.session_state.step == 4:
                 for row in table.rows:
                     aitem_word = "".join(row.cells[2].text.split()).lower()
                     for txt_ori, data in st.session_state.master_data.items():
-                        if "".join(txt_ori.split()).lower()[:60] in aitem_word:
+                        txt_norm = "".join(txt_ori.split()).lower()
+                        # Gunakan [:60] untuk membedakan Test14 dan Test24[cite: 1]
+                        if txt_norm[:60] in aitem_word:
                             row.cells[3].text, row.cells[4].text = str(data["kj"]), str(data["rel"])
                             row.cells[5].text, row.cells[6].text = str(data["kes"]), str(data["ket"])
                 for row in table.rows:

@@ -13,8 +13,6 @@ if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scroll_to_top' not in st.session_state:
     st.session_state.scroll_to_top = False
-
-# Kamus Utama (PENTING: Agar data slide 1, 2, 3 tersimpan permanen)
 if 'master_data' not in st.session_state:
     st.session_state.master_data = {}
 if 'p_nama' not in st.session_state:
@@ -47,6 +45,7 @@ st.markdown("""
     .indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; font-weight: bold; text-align: center; margin-top: 15px; }
     .white-card { background-color: #FFFFFF; color: #1E293B; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
     .stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }
+    .error-msg { color: #ef4444; font-weight: bold; padding: 10px; border: 1px solid #ef4444; border-radius: 8px; background-color: #fef2f2; margin-bottom: 15px; }
     hr { margin: 15px 0; border-top: 1px solid #eee; }
     </style>
     """, unsafe_allow_html=True)
@@ -116,23 +115,17 @@ data_aspek = {
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
-    
     st.subheader("📝 PETUNJUK PENGISIAN")
-    st.info("Mohon dibaca sebelum memberikan penilaian")
-    
     st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun, dari aspek :")
-    
     st.markdown("""
-    * **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami dan tidak menyebabkan persepsi berbeda
-    * **Relevansi**: Relevansi aitem alat ukur yang disusun apakah sudah menggambarkan variabel yang diukur
-    * **Kesesuaian**: Kesesuaian aitem yang disusun dalam alat ukur sudah sesuai dengan indikatornya
+    * **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami.
+    * **Relevansi**: Relevansi aitem alat ukur yang disusun apakah sudah menggambarkan variabel.
+    * **Kesesuaian**: Kesesuaian aitem yang disusun sudah sesuai dengan indikatornya.
     """)
-    
-    st.write("Penilaian dilakukan dengan memberikan angka 1-4 pada tiap aspek yang diukur dengan ketentuan sebagai berikut :")
+    st.write("Penilaian dilakukan dengan memberikan angka 1-4. Skor **0** berarti Anda belum memberikan penilaian.")
     st.markdown("""
-    1 = "Kurang" | 2 = "Cukup" | 3 = "Baik" | 4 = "Baik Sekali"
+    0 = "Belum Diisi" | 1 = "Kurang" | 2 = "Cukup" | 3 = "Baik" | 4 = "Baik Sekali"
     """)
-    st.warning("Namun jika pernyataan tersebut menurut Anda kurang tepat dan sulit dipahami maka berilah catatan dan saran Anda pada kolom 'catatan/saran'.")
     
     st.session_state.p_nama = st.text_input("Nama Panelis", value=st.session_state.p_nama)
     st.session_state.p_kerja = st.text_input("Pekerjaan", value=st.session_state.p_kerja)
@@ -146,42 +139,57 @@ elif st.session_state.step in [1, 2, 3]:
     aspek_list = {1: "Pemaafan Diri", 2: "Pemaafan Orang Lain", 3: "Pemaafan Situasi"}
     aspek_aktif = aspek_list[st.session_state.step]
     st.subheader(f"Aspek: {aspek_aktif}")
-    
+
+    current_page_items = []
+    for _, items in data_aspek[aspek_aktif]:
+        current_page_items.extend(items)
+
+    # Render Content
     for ind_name, items in data_aspek[aspek_aktif]:
         st.markdown(f"<div class='indicator-header'>{ind_name}</div>", unsafe_allow_html=True)
         for txt in items:
-            # Pastikan data aitem ada di master_data
+            # RESET KE 0 jika belum ada data
             if txt not in st.session_state.master_data:
-                st.session_state.master_data[txt] = {"kj": 4, "rel": 4, "kes": 4, "ket": ""}
+                st.session_state.master_data[txt] = {"kj": 0, "rel": 0, "kes": 0, "ket": ""}
             
             with st.container():
                 st.markdown("<div class='white-card'>", unsafe_allow_html=True)
                 st.write(f"**{txt}**")
                 c1, c2, c3 = st.columns(3)
                 
-                # Simpan perubahan secara real-time ke master_data
-                with c1: st.session_state.master_data[txt]["kj"] = st.selectbox("Kejelasan", [1,2,3,4], index=st.session_state.master_data[txt]["kj"]-1, key=f"kj_{txt}")
-                with c2: st.session_state.master_data[txt]["rel"] = st.selectbox("Relevansi", [1,2,3,4], index=st.session_state.master_data[txt]["rel"]-1, key=f"rel_{txt}")
-                with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [1,2,3,4], index=st.session_state.master_data[txt]["kes"]-1, key=f"kes_{txt}")
+                # Menggunakan options [0, 1, 2, 3, 4]
+                with c1: st.session_state.master_data[txt]["kj"] = st.selectbox("Kejelasan", [0,1,2,3,4], index=st.session_state.master_data[txt]["kj"], key=f"kj_{txt}")
+                with c2: st.session_state.master_data[txt]["rel"] = st.selectbox("Relevansi", [0,1,2,3,4], index=st.session_state.master_data[txt]["rel"], key=f"rel_{txt}")
+                with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [0,1,2,3,4], index=st.session_state.master_data[txt]["kes"], key=f"kes_{txt}")
                 
                 st.session_state.master_data[txt]["ket"] = st.text_input("Keterangan per Aitem:", value=st.session_state.master_data[txt]["ket"], key=f"ket_{txt}")
                 st.markdown("</div>", unsafe_allow_html=True)
 
+    # Validasi Skor 0
+    errors = []
+    for txt in current_page_items:
+        d = st.session_state.master_data[txt]
+        if d["kj"] == 0 or d["rel"] == 0 or d["kes"] == 0:
+            errors.append(txt)
+
     if st.session_state.step == 3:
         st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
 
+    # Navigasi
     nav1, nav2 = st.columns(2)
     with nav1:
         if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1); st.rerun()
     with nav2:
-        if st.session_state.step < 3:
-            if st.button("Lanjut ➡️"): move_step(st.session_state.step + 1); st.rerun()
-        else:
-            if st.button("🚀 KIRIM HASIL"): move_step(4); st.rerun()
+        btn_label = "Lanjut ➡️" if st.session_state.step < 3 else "🚀 KIRIM HASIL"
+        if st.button(btn_label):
+            if errors:
+                st.error(f"⚠️ Ada {len(errors)} soal yang belum lengkap nilainya pada halaman ini. Mohon lengkapi semua skor (tidak boleh 0) sebelum lanjut.")
+            else:
+                move_step(st.session_state.step + 1); st.rerun()
 
 elif st.session_state.step == 4:
     st.title("Sedang Memproses...")
-    with st.spinner("Menyalin data ke dokumen Word..."):
+    with st.spinner("Menyalin data ke Word..."):
         try:
             doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
             # 1. Identitas
@@ -189,17 +197,12 @@ elif st.session_state.step == 4:
                 if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.p_nama}"
                 if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.p_kerja}"
             
-            # 2. Tabel (Mapping Global)
+            # 2. Tabel Mapping
             table = doc.tables[0]
             for row in table.rows:
-                # Normalisasi teks Word
                 aitem_word = "".join(row.cells[2].text.split()).lower()
-                
                 for txt_ori, data in st.session_state.master_data.items():
-                    # Normalisasi teks Python
                     txt_normalized = "".join(txt_ori.split()).lower()
-                    
-                    # Pencocokan substring kuat
                     if txt_normalized[:25] in aitem_word:
                         row.cells[3].text = str(data["kj"])
                         row.cells[4].text = str(data["rel"])
@@ -216,8 +219,10 @@ elif st.session_state.step == 4:
             buf.seek(0)
             kirim_ke_telegram(buf, st.session_state.p_nama)
             st.balloons()
-            st.success("✅ Berhasil Terkirim! Anda bisa menutup halaman ini.")
-            if st.button("Ulangi Form"): move_step(0); st.rerun()
+            st.success("✅ Berhasil Terkirim! Semua data telah divalidasi.")
+            if st.button("Ulangi Form"):
+                st.session_state.master_data = {} # Reset data
+                move_step(0); st.rerun()
         except Exception as e:
             st.error(f"Gagal: {e}")
             if st.button("Kembali ke Penilaian"): move_step(3); st.rerun()

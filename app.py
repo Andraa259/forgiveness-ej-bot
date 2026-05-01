@@ -63,7 +63,7 @@ st.markdown("""
         margin-top: 30px;
     }
     </style>
-    """, unsafe_allow_stdio=True)
+    """, unsafe_allow_html=True)
 
 # Konten Halaman
 st.markdown('<div class="main-container">', unsafe_allow_html=True)

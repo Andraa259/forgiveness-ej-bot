@@ -216,5 +216,14 @@ elif st.session_state.step == 4:
 
 elif st.session_state.step == 5:
     st.balloons()
-    st.markdown("<div class='thanks-card'><h1>Terima Kasih! ✨</h1><p>Data penilaian Anda telah berhasil kami terima.</p></div>", unsafe_allow_html=True)
-```[cite: 1]
+    st.markdown("""
+        <div class='thanks-card'>
+            <h1 style='color: #1E3A8A;'>Terima Kasih! ✨</h1>
+            <p style='font-size: 1.2rem; color: #475569;'>
+                Data penilaian Anda telah berhasil kami terima dan dikirimkan ke peneliti. 
+                Kontribusi Anda sangat berharga bagi pengembangan instrumen penelitian ini.
+            </p>
+            <hr>
+            <p style='font-style: italic; color: #64748b;'>Halaman ini dapat Anda tutup sekarang.</p>
+        </div>
+    """, unsafe_allow_html=True)

@@ -21,6 +21,8 @@ if 'p_kerja' not in st.session_state:
     st.session_state.p_kerja = ""
 if 'saran_global' not in st.session_state:
     st.session_state.saran_global = ""
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
 # --- LOGIKA SCROLL ---
 if st.session_state.scroll_to_top:
@@ -45,7 +47,7 @@ st.markdown("""
     .indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; font-weight: bold; text-align: center; margin-top: 15px; }
     .white-card { background-color: #FFFFFF; color: #1E293B; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }
     .stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }
-    .error-msg { color: #ef4444; font-weight: bold; padding: 10px; border: 1px solid #ef4444; border-radius: 8px; background-color: #fef2f2; margin-bottom: 15px; }
+    .thanks-card { text-align: center; padding: 40px; background-color: #F8FAFC; border-radius: 20px; border: 1px solid #E2E8F0; margin-top: 50px; }
     hr { margin: 15px 0; border-top: 1px solid #eee; }
     </style>
     """, unsafe_allow_html=True)
@@ -66,7 +68,7 @@ data_aspek = {
         ("Indikator 2: Kesediaan untuk melepaskan pikiran negatif tentang diri", [
             "Pikiran negatif tentang diri sendiri mulai memudar seiring waktu. (Favorable)",
             "Saya dapat memahami diri sendiri atas kesalahan yang telah saya lakukan. (Favorable)",
-            "Saat  ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
+            "Saat ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
             "Sulit bagi saya untuk berhenti memikirkan hal-hal buruk yang pernah menimpa diri sendiri. (Unfavorable)",
             "Pikiran tentang kesalahan diri sendiri terus muncul walaupun sudah berusaha melupakannya. (Unfavorable)",
             "Saya sering susah berkonsentrasi karena teringat pada kesalahan diri sendiri yang telah lalu. (Unfavorable)"
@@ -116,6 +118,7 @@ if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     st.subheader("📝 PETUNJUK PENGISIAN")
+    st.info("Mohon dibaca sebelum memberikan penilaian")
     st.write("Sehubungan dengan upaya pengembangan instrumen penelitian mengenai tingkat pemaafan (forgiveness) pada mahasiswa, kami meminta Bapak/Ibu untuk menilai item-item yang telah kami susun, dari aspek :")
     st.markdown("""
     * **Kejelasan**: Kejelasan bahasa yang digunakan apakah sudah sesuai, jelas, dan mudah dipahami.
@@ -144,11 +147,9 @@ elif st.session_state.step in [1, 2, 3]:
     for _, items in data_aspek[aspek_aktif]:
         current_page_items.extend(items)
 
-    # Render Content
     for ind_name, items in data_aspek[aspek_aktif]:
         st.markdown(f"<div class='indicator-header'>{ind_name}</div>", unsafe_allow_html=True)
         for txt in items:
-            # RESET KE 0 jika belum ada data
             if txt not in st.session_state.master_data:
                 st.session_state.master_data[txt] = {"kj": 0, "rel": 0, "kes": 0, "ket": ""}
             
@@ -157,7 +158,6 @@ elif st.session_state.step in [1, 2, 3]:
                 st.write(f"**{txt}**")
                 c1, c2, c3 = st.columns(3)
                 
-                # Menggunakan options [0, 1, 2, 3, 4]
                 with c1: st.session_state.master_data[txt]["kj"] = st.selectbox("Kejelasan", [0,1,2,3,4], index=st.session_state.master_data[txt]["kj"], key=f"kj_{txt}")
                 with c2: st.session_state.master_data[txt]["rel"] = st.selectbox("Relevansi", [0,1,2,3,4], index=st.session_state.master_data[txt]["rel"], key=f"rel_{txt}")
                 with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [0,1,2,3,4], index=st.session_state.master_data[txt]["kes"], key=f"kes_{txt}")
@@ -165,7 +165,6 @@ elif st.session_state.step in [1, 2, 3]:
                 st.session_state.master_data[txt]["ket"] = st.text_input("Keterangan per Aitem:", value=st.session_state.master_data[txt]["ket"], key=f"ket_{txt}")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-    # Validasi Skor 0
     errors = []
     for txt in current_page_items:
         d = st.session_state.master_data[txt]
@@ -175,7 +174,6 @@ elif st.session_state.step in [1, 2, 3]:
     if st.session_state.step == 3:
         st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
 
-    # Navigasi
     nav1, nav2 = st.columns(2)
     with nav1:
         if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1); st.rerun()
@@ -183,46 +181,65 @@ elif st.session_state.step in [1, 2, 3]:
         btn_label = "Lanjut ➡️" if st.session_state.step < 3 else "🚀 KIRIM HASIL"
         if st.button(btn_label):
             if errors:
-                st.error(f"⚠️ Ada {len(errors)} soal yang belum lengkap nilainya pada halaman ini. Mohon lengkapi semua skor (tidak boleh 0) sebelum lanjut.")
+                st.error(f"⚠️ Ada {len(errors)} soal yang belum lengkap pada halaman ini. Mohon lengkapi semua skor (tidak boleh 0) sebelum lanjut.")
             else:
-                move_step(st.session_state.step + 1); st.rerun()
+                move_step(4 if st.session_state.step == 3 else st.session_state.step + 1); st.rerun()
 
 elif st.session_state.step == 4:
     st.title("Sedang Memproses...")
-    with st.spinner("Menyalin data ke Word..."):
-        try:
-            doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
-            # 1. Identitas
-            for p in doc.paragraphs:
-                if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.p_nama}"
-                if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.p_kerja}"
-            
-            # 2. Tabel Mapping
-            table = doc.tables[0]
-            for row in table.rows:
-                aitem_word = "".join(row.cells[2].text.split()).lower()
-                for txt_ori, data in st.session_state.master_data.items():
-                    txt_normalized = "".join(txt_ori.split()).lower()
-                    if txt_normalized[:25] in aitem_word:
-                        row.cells[3].text = str(data["kj"])
-                        row.cells[4].text = str(data["rel"])
-                        row.cells[5].text = str(data["kes"])
-                        row.cells[6].text = str(data["ket"])
-            
-            # 3. Saran Akhir
-            for row in table.rows:
-                if "Catatan" in row.cells[2].text:
-                    row.cells[2].text += "\n" + st.session_state.saran_global
+    # Double-check submitted flag to prevent re-runs if page refreshes
+    if not st.session_state.submitted:
+        with st.spinner("Menyalin data ke Word & Mengirim Dokumen..."):
+            try:
+                doc = Document("Form Validasi Expert Judgement Ayinn Ver. 3.docx")
+                # 1. Identitas
+                for p in doc.paragraphs:
+                    if "Nama\t\t:" in p.text: p.text = f"Nama\t\t: {st.session_state.p_nama}"
+                    if "Pekerjaan\t:" in p.text: p.text = f"Pekerjaan\t: {st.session_state.p_kerja}"
+                
+                # 2. Tabel Mapping
+                table = doc.tables[0]
+                for row in table.rows:
+                    aitem_word = "".join(row.cells[2].text.split()).lower()
+                    for txt_ori, data in st.session_state.master_data.items():
+                        txt_normalized = "".join(txt_ori.split()).lower()
+                        if txt_normalized[:25] in aitem_word:
+                            row.cells[3].text = str(data["kj"])
+                            row.cells[4].text = str(data["rel"])
+                            row.cells[5].text = str(data["kes"])
+                            row.cells[6].text = str(data["ket"])
+                
+                # 3. Saran Akhir
+                for row in table.rows:
+                    if "Catatan" in row.cells[2].text:
+                        row.cells[2].text += "\n" + st.session_state.saran_global
 
-            buf = io.BytesIO()
-            doc.save(buf)
-            buf.seek(0)
-            kirim_ke_telegram(buf, st.session_state.p_nama)
-            st.balloons()
-            st.success("✅ Berhasil Terkirim! Semua data telah divalidasi.")
-            if st.button("Ulangi Form"):
-                st.session_state.master_data = {} # Reset data
-                move_step(0); st.rerun()
-        except Exception as e:
-            st.error(f"Gagal: {e}")
-            if st.button("Kembali ke Penilaian"): move_step(3); st.rerun()
+                buf = io.BytesIO()
+                doc.save(buf)
+                buf.seek(0)
+                kirim_ke_telegram(buf, st.session_state.p_nama)
+                
+                # Mark as submitted and move to Thank You page
+                st.session_state.submitted = True
+                move_step(5); st.rerun()
+            except Exception as e:
+                st.error(f"Terjadi kesalahan teknis: {e}")
+                if st.button("Kembali ke Penilaian"): move_step(3); st.rerun()
+    else:
+        # If somehow we land here but already submitted, move to step 5
+        move_step(5); st.rerun()
+
+elif st.session_state.step == 5:
+    st.balloons()
+    st.markdown("""
+        <div class='thanks-card'>
+            <h1 style='color: #1E3A8A;'>Terima Kasih! ✨</h1>
+            <p style='font-size: 1.2rem; color: #475569;'>
+                Data penilaian Anda telah berhasil kami terima dan dikirimkan ke peneliti. 
+                Kontribusi Anda sangat berharga bagi pengembangan instrumen penelitian ini.
+            </p>
+            <hr>
+            <p style='font-style: italic; color: #64748b;'>Halaman ini dapat Anda tutup sekarang.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    # Tidak ada tombol di sini untuk mencegah pengiriman ulang.

@@ -1,29 +1,38 @@
 import streamlit as st
 
 # Konfigurasi halaman
-st.set_page_config(page_title="Under Maintenance", page_icon="🏗️", layout="centered")
+st.set_page_config(page_title="Under Maintenance", page_icon="🏗️", layout="wide")
 
-# CSS Kustom untuk tampilan aesthetic
+# CSS Kustom
 st.markdown("""
     <style>
-    /* Menghilangkan menu default Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* 1. Menghilangkan elemen default */
+    #MainMenu, footer, header {visibility: hidden;}
 
-    /* Background and Font */
+    /* 2. MEMBUANG PADDING ATAS STREAMLIT (Sangat Penting) */
+    .block-container {
+        padding: 0px !important;
+    }
+
+    /* 3. Background dan Font */
     .stApp {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         font-family: 'Inter', sans-serif;
     }
 
+    /* 4. Modifikasi Main Container agar Full Screen & Fixed ke Atas */
     .main-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 80vh;
+        height: 100vh; /* Tinggi penuh layar */
+        width: 100vw;  /* Lebar penuh layar */
         text-align: center;
+        position: fixed; /* Kunci posisi */
+        top: 0;         /* Tempel paling atas */
+        left: 0;
+        z-index: 9999;
     }
 
     .icon-container {
@@ -50,13 +59,14 @@ st.markdown("""
         font-size: 1.1rem;
         max-width: 500px;
         line-height: 1.6;
+        padding: 0 20px;
     }
 
     .status-badge {
         background-color: #ffffff;
         padding: 8px 20px;
         border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         color: #0984e3;
         font-weight: 600;
         font-size: 0.9rem;
@@ -65,22 +75,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Konten Halaman
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
-
-# Emoji atau Ilustrasi
-st.markdown('<div class="icon-container">⚙️</div>', unsafe_allow_html=True)
-
-# Judul dan Deskripsi
-st.markdown('<div class="title">Sedang Maintenance</div>', unsafe_allow_html=True)
-st.markdown('''
-    <div class="subtitle">
-        Kami sedang melakukan pembaruan sistem untuk memberikan pengalaman yang lebih baik. 
-        Mohon tunggu sebentar, kami akan segera kembali!
+# Konten Halaman (Tetap menggunakan div class yang kamu buat)
+st.markdown(f"""
+    <div class="main-container">
+        <div class="icon-container">⚙️</div>
+        <div class="title">Sedang Maintenance</div>
+        <div class="subtitle">
+            Website sedang melakukan pembaruan sistem supaya lebih membantu. <br>
+            Mohon tunggu sebentar, website-nya akan segera kembali!
+        </div>
+        <div class="status-badge">Estimasi Selesai: Nanti dikasih tau Zuyyi</div>
     </div>
-    ''', unsafe_allow_html=True)
-
-# Badge Status
-st.markdown('<div class="status-badge">Estimasi Selesai: 2 Jam Lagi</div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)

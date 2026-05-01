@@ -8,7 +8,7 @@ from streamlit_scroll_to_top import scroll_to_here
 TOKEN = st.secrets["TOKEN"]
 CHAT_ID = st.secrets["CHAT_ID"]
 
-# --- 1. DEFINISI OPERASIONAL (VARIABEL YANG TADI HILANG) ---
+# --- VARIABEL WAJIB ---
 DEF_OP = "Pemaafan adalah kemampuan individual dalam membingkai ulang terhadap suatu kesalahan yang dialami/dirasakan sehingga mampu berhenti menyalahkan diri sendiri dan melepaskan pikiran negatif tentang diri sendiri, memahami kesalahan orang lain seiring berjalannya waktu serta berhenti berpikir buruk tentang orang yang pernah menyakiti, dan mampu berdamai dengan keadaan buruk dalam hidup serta melepaskan pikiran negatif terhadap peristiwa yang berada di luar kendali."
 
 # --- INITIALIZING SESSION STATE ---
@@ -16,21 +16,21 @@ if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scroll_to_top' not in st.session_state:
     st.session_state.scroll_to_top = False
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
-# Identitas Sesuai Dokumen Testing[cite: 1]
+# --- SET IDENTITAS TESTING ---[cite: 1]
 if 'p_nama' not in st.session_state:
     st.session_state.p_nama = "Testing"
 if 'p_kerja' not in st.session_state:
     st.session_state.p_kerja = "test123"
 if 'saran_global' not in st.session_state:
     st.session_state.saran_global = "Testing Full"
-if 'submitted' not in st.session_state:
-    st.session_state.submitted = False
 
 # --- DATA INDIKATOR ---
 data_aspek = {
     "Pemaafan Diri": [
-        ("Indikator 1: Kemampuan untuk berhenti menyalahkan diri sendiri", [
+        ("Indikator 1", [
             "Seiring waktu, saya bisa memaklumi kesalahan pribadi yang pernah dilakukan. (Favorable)",
             "Ketika membuat kesalahan, saya fokus pada perbaikan daripada terus menerus menyalahkan diri sendiri. (Favorable)",
             "Saya memilih untuk berdamai dengan kekurangan diri sendiri. (Favorable)",
@@ -38,7 +38,7 @@ data_aspek = {
             "Muncul perasaan benci ketika saya mengingat kesalahan diri sendiri. (Unfavorable)",
             "Saya terjebak dalam penyesalan atas kegagalan diri sendiri. (Unfavorable)"
         ]),
-        ("Indikator 2: Kesediaan untuk melepaskan pikiran negatif tentang diri", [
+        ("Indikator 2", [
             "Pikiran negatif tentang diri sendiri mulai memudar seiring waktu. (Favorable)",
             "Saya dapat memahami diri sendiri atas kesalahan yang telah saya lakukan. (Favorable)",
             "Saat ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
@@ -48,70 +48,43 @@ data_aspek = {
         ])
     ],
     "Pemaafan Orang Lain": [
-        ("Indikator 3: Kemampuan untuk memahami kesalahan orang lain", [
-            "Saya dapat memaklumi bahwa setiap orang pasti pernah melakukan kekeliruan. (Favorable)",
-            "Saya mencoba memahami alasan dibalik tindakan orang lain yang telah menyakiti saya. (Favorable)",
-            "Saya menyadari bahwa ada alasan tertentu yang membuat orang lain sulit untuk bertindak benar. (Favorable)",
-            "Memandang orang yang menyakiti saya sebagai pribadi yang memiliki karakter buruk. (Unfavorable)",
-            "Saya tidak bisa menerima alasan apapun dari orang yang telah mengecewakan saya. (Unfavorable)",
-            "Sangat sulit bagi saya untuk mengerti mengapa seseorang berbuat jahat kepada saya. (Unfavorable)"
-        ]),
-        ("Indikator 4: Berhenti berpikir buruk tentang orang yang pernah menyakiti", [
-            "Pikiran buruk terhadap orang yang pernah menyakiti saya perlahan mulai menghilang. (Favorable)",
-            "Saya merasa sudah tidak lagi menyimpan kebencian terhadap orang yang pernah menyakiti saya. (Favorable)",
-            "Mudah bagi saya melepaskan rasa benci yang tertuju pada orang yang pernah berbuat salah. (Favorable)",
-            "Saya terus membayangkan hal-hal negatif terjadi pada orang yang telah menyakiti saya. (Unfavorable)",
-            "Sulit bagi saya untuk menghilangkan pandangan negatif terhadap orang yang pernah berbuat salah. (Unfavorable)",
-            "Rasa kesal muncul kembali setiap kali saya mengingat perlakuan orang yang menyakiti saya. (Unfavorable)"
-        ])
+        ("Indikator 3", ["Saya dapat memaklumi bahwa setiap orang pasti pernah melakukan kekeliruan. (Favorable)", "Saya mencoba memahami alasan dibalik tindakan orang lain yang telah menyakiti saya. (Favorable)", "Saya menyadari bahwa ada alasan tertentu yang membuat orang lain sulit untuk bertindak benar. (Favorable)", "Memandang orang yang menyakiti saya sebagai pribadi yang memiliki karakter buruk. (Unfavorable)", "Saya tidak bisa menerima alasan apapun dari orang yang telah mengecewakan saya. (Unfavorable)", "Sangat sulit bagi saya untuk mengerti mengapa seseorang berbuat jahat kepada saya. (Unfavorable)"]),
+        ("Indikator 4", ["Pikiran buruk terhadap orang yang pernah menyakiti saya perlahan mulai menghilang. (Favorable)", "Saya merasa sudah tidak lagi menyimpan kebencian terhadap orang yang pernah menyakiti saya. (Favorable)", "Mudah bagi saya melepaskan rasa benci yang tertuju pada orang yang pernah berbuat salah. (Favorable)", "Saya terus membayangkan hal-hal negatif terjadi pada orang yang telah menyakiti saya. (Unfavorable)", "Sulit bagi saya untuk menghilangkan pandangan negatif terhadap orang yang pernah berbuat salah. (Unfavorable)", "Rasa kesal muncul kembali setiap kali saya mengingat perlakuan orang yang menyakiti saya. (Unfavorable)"])
     ],
     "Pemaafan Situasi": [
-        ("Indikator 5: Kemampuan untuk berdamai dengan keadaan buruk dalam hidup", [
-            "Seiring berjalannya waktu, saya mulai bisa menerima kenyataan pahit yang terjadi dalam hidup dengan lapang dada. (Favorable)",
-            "Saya sadar untuk tidak menyalahkan nasib atas kejadian buruk yang menimpa. (Favorable)",
-            "Mampu menerima kenyataan bahwa hidup tidak selalu berjalan sesuai dengan rencana saya. (Favorable)",
-            "Saya merasa semesta tidak adil karena terus memberikan cobaan yang berat. (Unfavorable)",
-            "Sering merasa terjebak dalam nasib buruk yang seolah-olah tidak pernah berakhir di hidup saya. (Unfavorable)",
-            "Terus-menerus mengeluhkan nasib buruk yang menimpa diri saya menjadi hal yang sulit untuk dihentikan. (Unfavorable)"
-        ]),
-        ("Indikator 6: Melepaskan pikiran negatif terhadap peristiwa luar kendali", [
-            "Pikiran tentang kejadian buruk di masa lalu tidak lagi mengganggu saya untuk berkonsentrasi sehari-hari. (Favorable)",
-            "Saya merasa sudah bisa berdamai dengan bayangan tentang masa-masa sulit yang pernah dialami. (Favorable)",
-            "Saya mampu mengalihkan fokus dari peristiwa yang mengecewakan ke hal-hal yang lebih produktif. (Favorable)",
-            "Sangat sulit bagi saya untuk tidak memikirkan kegagalan yang pernah dialami. (Unfavorable)",
-            "Saya merasa terjebak dalam memori tentang kejadian buruk yang pernah saya alami. (Unfavorable)",
-            "Bayangan mengenai ketidakadilan hidup di masa lalu sering kali muncul tanpa bisa saya kendalikan. (Unfavorable)"
-        ])
+        ("Indikator 5", ["Seiring berjalannya waktu, saya mulai bisa menerima kenyataan pahit yang terjadi dalam hidup dengan lapang dada. (Favorable)", "Saya sadar untuk tidak menyalahkan nasib atas kejadian buruk yang menimpa. (Favorable)", "Mampu menerima kenyataan bahwa hidup tidak selalu berjalan sesuai dengan rencana saya. (Favorable)", "Saya merasa semesta tidak adil karena terus memberikan cobaan yang berat. (Unfavorable)", "Sering merasa terjebak dalam nasib buruk yang seolah-olah tidak pernah berakhir di hidup saya. (Unfavorable)", "Terus-menerus mengeluhkan nasib buruk yang menimpa diri saya menjadi hal yang sulit untuk dihentikan. (Unfavorable)"]),
+        ("Indikator 6", ["Pikiran tentang kejadian buruk di masa lalu tidak lagi mengganggu saya untuk berkonsentrasi sehari-hari. (Favorable)", "Saya merasa sudah bisa berdamai dengan bayangan tentang masa-masa sulit yang pernah dialami. (Favorable)", "Saya mampu mengalihkan fokus dari peristiwa yang mengecewakan ke hal-hal yang lebih produktif. (Favorable)", "Sangat sulit bagi saya untuk tidak memikirkan kegagalan yang pernah dialami. (Unfavorable)", "Saya merasa terjebak dalam memori tentang kejadian buruk yang pernah saya alami. (Unfavorable)", "Bayangan mengenai ketidakadilan hidup di masa lalu sering kali muncul tanpa bisa saya kendalikan. (Unfavorable)"])
     ]
 }
 
-# --- PRE-FILLED MASTER DATA (Sesuai Word Testing) ---[cite: 1]
+# --- PRE-FILLED SKOR & KETERANGAN ---[cite: 1]
 if 'master_data' not in st.session_state:
     md = {}
+    # Pola skor 1,1,1; 2,2,2; dst sesuai urutan item[cite: 1]
+    skors = [1, 2, 3, 2, 1, 2, 3, 4, 1, 2, 3, 4]
+    
     # 1. Pemaafan Diri[cite: 1]
+    kets_diri = ["Test11", "Test12", "Test13", "Test24", "Test15", "Test16", "Test21", "Test22", "Test23", "Test24", "Test25", "Test26"]
     items_diri = [item for sub in data_aspek["Pemaafan Diri"] for item in sub[1]]
-    skor_diri = [1, 2, 3, 2, 1, 2, 3, 4, 1, 2, 3, 4] 
-    ket_diri = ["Test11", "Test12", "Test13", "Test24", "Test15", "Test16", "Test21", "Test22", "Test23", "Test24", "Test25", "Test26"]
     for i, txt in enumerate(items_diri):
-        md[txt] = {"kj": skor_diri[i], "rel": skor_diri[i], "kes": skor_diri[i], "ket": ket_diri[i]}
-
+        s = skors[i]
+        md[txt] = {"kj": s, "rel": s, "kes": s, "ket": kets_diri[i]}
+    
     # 2. Pemaafan Orang Lain[cite: 1]
     items_orang = [item for sub in data_aspek["Pemaafan Orang Lain"] for item in sub[1]]
-    skor_orang = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]
-    ket_orang = ["Test31", "Test32", "Test33", "Test34", "Test35", "Test36", "Test41", "Test42", "Test43", "Test44", "Test45", "Test46"]
     for i, txt in enumerate(items_orang):
-        md[txt] = {"kj": skor_orang[i], "rel": skor_orang[i], "kes": skor_orang[i], "ket": ket_orang[i]}
-
-    # 3. Pemaafan Situasi[cite: 1]
-    items_situasi = [item for sub in data_aspek["Pemaafan Situasi"] for item in sub[1]]
-    skor_situasi = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]
-    ket_situasi = ["Test51", "Test52", "Test53", "Test54", "Test55", "Test56", "Test61", "Test62", "Test63", "Test64", "Test65", "Test66"]
-    for i, txt in enumerate(items_situasi):
-        md[txt] = {"kj": skor_situasi[i], "rel": skor_situasi[i], "kes": skor_situasi[i], "ket": ket_situasi[i]}
+        s = (i % 4) + 1 # Pola 1,2,3,4
+        md[txt] = {"kj": s, "rel": s, "kes": s, "ket": f"Test{30+i+1 if i < 6 else 40+i-5}"}
         
+    # 3. Pemaafan Situasi[cite: 1]
+    items_sit = [item for sub in data_aspek["Pemaafan Situasi"] for item in sub[1]]
+    for i, txt in enumerate(items_sit):
+        s = (i % 4) + 1
+        md[txt] = {"kj": s, "rel": s, "kes": s, "ket": f"Test{50+i+1 if i < 6 else 60+i-5}"}
+
     st.session_state.master_data = md
 
-# --- LOGIKA SCROLL & NAVIGASI ---
+# --- LOGIKA NAVIGASI ---
 if st.session_state.scroll_to_top:
     scroll_to_here(0, key=f'scroll_step_{st.session_state.step}') 
     st.session_state.scroll_to_top = False
@@ -123,25 +96,23 @@ def move_step(step_num):
 def kirim_ke_telegram(file_stream, nama_panelis):
     url = f"https://api.telegram.org/bot{TOKEN}/sendDocument"
     files = {'document': (f'Form Validasi Expert Judgement Forgiveness_{nama_panelis}.docx', file_stream)}
-    payload = {'chat_id': CHAT_ID, 'caption': f"✅ Data Form Expert Judgement Masuk: {nama_panelis}"}
+    payload = {'chat_id': CHAT_ID, 'caption': f"✅ Data Testing Masuk: {nama_panelis}"}
     return requests.post(url, data=payload, files=files)
 
-# --- UI STYLING ---
+# --- UI STYLE ---
 st.set_page_config(page_title="Expert Judgement", layout="centered")
-st.markdown("""<style>.def-box { background-color: #F0F9FF; padding: 18px; border-radius: 12px; border-left: 6px solid #0EA5E9; margin-bottom: 20px; line-height: 1.6; }.indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; font-weight: bold; text-align: center; margin-top: 15px; }.white-card { background-color: #FFFFFF; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 30px; }.stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }.thanks-card { text-align: center; padding: 40px; background-color: #F8FAFC; border-radius: 20px; border: 1px solid #E2E8F0; margin-top: 50px; }hr { margin: 15px 0; border-top: 1px solid #eee; }</style>""", unsafe_allow_html=True)
+st.markdown("""<style>.def-box { background-color: #F0F9FF; padding: 18px; border-radius: 12px; border-left: 6px solid #0EA5E9; margin-bottom: 20px; }.indicator-header { background-color: #1E3A8A; color: white; padding: 12px; border-radius: 10px 10px 0 0; font-weight: bold; text-align: center; margin-top: 15px; }.white-card { background-color: #FFFFFF; padding: 25px; border-radius: 0 0 10px 10px; border: 1px solid #E2E8F0; margin-bottom: 30px; }.stButton>button { border-radius: 10px; height: 50px; font-weight: bold; width: 100%; }.thanks-card { text-align: center; padding: 40px; margin-top: 50px; }</style>""", unsafe_allow_html=True)
 
-# --- ALUR APLIKASI ---
+# --- FLOW ---
 if st.session_state.step == 0:
     st.title("⚖️ Form Validasi Expert Judgement")
     st.markdown(f"<div class='def-box'><b>Definisi Operasional:</b><br>{DEF_OP}</div>", unsafe_allow_html=True)
     st.subheader("📝 PETUNJUK PENGISIAN")
     st.info("Mohon dibaca sebelum memberikan penilaian")
-    st.write("Silakan lengkapi identitas untuk melanjutkan.")
+    st.write("Silakan lengkapi identitas untuk melanjutkan penilaian (Kejelasan, Relevansi, Kesesuaian). Skor: 1=Kurang, 4=Baik Sekali.")
     st.session_state.p_nama = st.text_input("Nama Panelis", value=st.session_state.p_nama)
     st.session_state.p_kerja = st.text_input("Pekerjaan", value=st.session_state.p_kerja)
-    if st.button("Mulai Penilaian 🚀"):
-        if st.session_state.p_nama == "" or st.session_state.p_kerja == "": st.error("⚠️ Nama dan Pekerjaan wajib diisi!")
-        else: move_step(1); st.rerun()
+    if st.button("Mulai Penilaian 🚀"): move_step(1); st.rerun()
 
 elif st.session_state.step in [1, 2, 3]:
     aspek_list = {1: "Pemaafan Diri", 2: "Pemaafan Orang Lain", 3: "Pemaafan Situasi"}
@@ -157,15 +128,16 @@ elif st.session_state.step in [1, 2, 3]:
                 with c1: st.session_state.master_data[txt]["kj"] = st.selectbox("Kejelasan", [0,1,2,3,4], index=st.session_state.master_data[txt]["kj"], key=f"kj_{txt}")
                 with c2: st.session_state.master_data[txt]["rel"] = st.selectbox("Relevansi", [0,1,2,3,4], index=st.session_state.master_data[txt]["rel"], key=f"rel_{txt}")
                 with c3: st.session_state.master_data[txt]["kes"] = st.selectbox("Kesesuaian", [0,1,2,3,4], index=st.session_state.master_data[txt]["kes"], key=f"kes_{txt}")
-                st.session_state.master_data[txt]["ket"] = st.text_input("Keterangan per Aitem:", value=st.session_state.master_data[txt]["ket"], key=f"ket_{txt}")
+                st.session_state.master_data[txt]["ket"] = st.text_input("Keterangan:", value=st.session_state.master_data[txt]["ket"], key=f"ket_{txt}")
                 st.markdown("</div>", unsafe_allow_html=True)
-    if st.session_state.step == 3: st.session_state.saran_global = st.text_area("Catatan/Saran Keseluruhan:", value=st.session_state.saran_global)
-    nb1, nb2 = st.columns(2)
-    with nb1: 
+    if st.session_state.step == 3: st.session_state.saran_global = st.text_area("Saran Umum:", value=st.session_state.saran_global)
+    
+    col_back, col_next = st.columns(2)
+    with col_back:
         if st.button("⬅️ Kembali"): move_step(st.session_state.step - 1); st.rerun()
-    with nav2 if 'nav2' not in locals() else nav2: # Safe navigasi
+    with col_next:
         if st.button("Lanjut ➡️" if st.session_state.step < 3 else "🚀 KIRIM HASIL"):
-            move_step(st.session_state.step + 1); st.rerun()
+            move_step(4 if st.session_state.step == 3 else st.session_state.step + 1); st.rerun()
 
 elif st.session_state.step == 4:
     if not st.session_state.submitted:
@@ -180,7 +152,7 @@ elif st.session_state.step == 4:
                     aitem_word = "".join(row.cells[2].text.split()).lower()
                     for txt_ori, data in st.session_state.master_data.items():
                         txt_norm = "".join(txt_ori.split()).lower()
-                        # Gunakan [:60] untuk membedakan Test14 dan Test24[cite: 1]
+                        # Fix collision Test14 & Test24 dengan [:60][cite: 1]
                         if txt_norm[:60] in aitem_word:
                             row.cells[3].text, row.cells[4].text = str(data["kj"]), str(data["rel"])
                             row.cells[5].text, row.cells[6].text = str(data["kes"]), str(data["ket"])
@@ -194,4 +166,4 @@ elif st.session_state.step == 4:
 
 elif st.session_state.step == 5:
     st.balloons()
-    st.markdown("<div class='thanks-card'><h1>Terima Kasih! ✨</h1><p>Data penilaian Anda telah berhasil kami terima.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div class='thanks-card'><h1>Terima Kasih! ✨</h1><p>Data penilaian Anda telah terkirim.</p></div>", unsafe_allow_html=True)

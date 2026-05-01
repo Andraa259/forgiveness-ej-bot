@@ -33,8 +33,8 @@ def move_step(step_num):
 
 def kirim_ke_telegram(file_stream, nama_panelis):
     url = f"https://api.telegram.org/bot{TOKEN}/sendDocument"
-    files = {'document': (f'Hasil_Validasi_{nama_panelis}.docx', file_stream)}
-    payload = {'chat_id': CHAT_ID, 'caption': f"✅ Validasi Masuk: {nama_panelis}"}
+    files = {'document': (f'Form Validasi Expert Judgement Forgiveness_{nama_panelis}.docx', file_stream)}
+    payload = {'chat_id': CHAT_ID, 'caption': f"✅ Data Form Expert Judgement Masuk: {nama_panelis}"}
     return requests.post(url, data=payload, files=files)
 
 # --- UI STYLING ---

@@ -108,7 +108,7 @@ def kirim_telegram_multi(word_buf, excel_buf, nama_panelis):
     for target in targets:
         for f_type, f_buf in target["files"]:
             if f_buf is not None:
-                fname = f"Form_{nama_panelis}.docx" if f_type == "docx" else f"CVI_Aiken_Kumulatif_{nama_panelis}.xlsx"
+                fname = f"Form Validasi Expert Judgement Forgiveness_{nama_panelis}.docx" if f_type == "docx" else f"CVI_Aiken_Kumulatif_{nama_panelis}.xlsx"
                 f_buf.seek(0)
                 requests.post(url, data={'chat_id': target["id"], 'caption': f"✅ {f_type.upper()} Masuk: {nama_panelis}"}, files={'document': (fname, f_buf)})
 

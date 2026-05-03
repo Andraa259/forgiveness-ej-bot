@@ -152,7 +152,7 @@ data_aspek = {
         ("Indikator 2: Kesediaan untuk melepaskan pikiran negatif tentang diri", [
             "Pikiran negatif tentang diri sendiri mulai memudar seiring waktu. (Favorable)",
             "Saya dapat memahami diri sendiri atas kesalahan yang telah saya lakukan. (Favorable)",
-            "Saat  ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
+            "Saat ingatan yang mengganggu tentang diri sendiri muncul, saya mampu melepaskannya. (Favorable)",
             "Sulit bagi saya untuk berhenti memikirkan hal-hal buruk yang pernah menimpa diri sendiri. (Unfavorable)",
             "Pikiran tentang kesalahan diri sendiri terus muncul walaupun sudah berusaha melupakannya. (Unfavorable)",
             "Saya sering susah berkonsentrasi karena teringat pada kesalahan diri sendiri yang telah lalu. (Unfavorable)"
